@@ -1,0 +1,89 @@
+%macro WRITE 2
+    mov rax, 01
+    mov rdi, 01
+    mov rsi, %1
+    mov rdx, %2
+    syscall
+%endmacro
+
+%macro READ 2
+    mov rax, 00
+    mov rdi, 00
+    mov rsi, %1
+    mov rdx, %2
+    syscall
+%endmacro
+
+%macro EXIT 0
+    mov rax, 60
+    mov rdi, 00
+    syscall
+%endmacro
+
+section .data
+    msg3 db "Enter the Hexadecimal number: "
+    len3 equ $-msg3
+    msg4 db "The BCD number is: "
+    len4 equ $-msg4
+
+section .bss
+    char_buff resb 32
+    act1 resq 1
+    num resq 1
+
+section .text
+    global _start
+
+_start:
+    WRITE msg3, len3
+    READ char_buff, 17
+    dec rax
+    mov qword[act1], rax
+
+    mov rsi, char_buff
+    mov rax, 00H
+    mov rbx, 10H
+
+up2:
+    mov rdx, 00H
+    mov dl, byte[rsi]
+    cmp dl, 39H
+    jbe digit
+    sub dl, 07H
+
+digit:
+    sub dl, 30H
+    mov rcx, rdx
+    mul rbx
+    add rax, rcx
+    inc rsi
+    dec qword[act1]
+    jnz up2
+
+    mov qword[num], rax
+
+    WRITE msg4, len4
+    call display_bcd
+
+    EXIT
+
+display_bcd:
+    mov rax, qword[num]
+    mov rsi, char_buff
+    add rsi, 31
+    mov rcx, 00H
+
+convert:
+    mov rdx, 00H
+    mov rbx, 10
+    div rbx
+    add dl, 30H
+    dec rsi
+    mov byte[rsi], dl
+    inc rcx
+    cmp rax, 00H
+    jnz convert
+
+    mov rdx, rcx
+    WRITE rsi, rdx
+    ret
