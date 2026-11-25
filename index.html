@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COA Lab Programs - Fast Assembly Reference</title>
+  <style>
+    /* Instant-load, zero-external-dependency styles */
+    :root {
+      --bg: #0d1117;
+      --card-bg: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --accent: #58a6ff;
+      --accent-hover: #1f6feb;
+      --success: #3fb950;
+      --code-bg: #0b0e14;
+      --nav-bg: rgba(22, 27, 34, 0.95);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding-bottom: 60px;
+    }
+    /* Sticky header for ultra-fast navigation */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--nav-bg);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 20px;
+    }
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge {
+      background: #238636;
+      color: #fff;
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .quick-nav {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .quick-nav a {
+      color: var(--accent);
+      background: #21262d;
+      border: 1px solid var(--border);
+      padding: 5px 10px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 500;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .quick-nav a:hover {
+      background: var(--accent-hover);
+      color: #fff;
+      border-color: var(--accent-hover);
+    }
+    /* Quick Search Bar */
+    .search-box {
+      width: 100%;
+      max-width: 320px;
+      position: relative;
+    }
+    .search-input {
+      width: 100%;
+      padding: 6px 12px;
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.3);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 0 16px;
+    }
+    .prog-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 24px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      scroll-margin-top: 80px;
+    }
+    .card-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: #1c2128;
+    }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #58a6ff;
+    }
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .compile-tag {
+      font-size: 0.75rem;
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      background: #21262d;
+      color: #7ee787;
+      border: 1px solid #30363d;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .copy-btn {
+      background: #238636;
+      color: #fff;
+      border: 1px solid rgba(240,246,252,0.1);
+      padding: 6px 14px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s ease;
+    }
+    .copy-btn:hover {
+      background: #2ea043;
+    }
+    .copy-btn.copied {
+      background: #1f6feb;
+    }
+
+    /* Program details summary */
+    .prog-meta {
+      padding: 8px 18px;
+      font-size: 0.83rem;
+      color: var(--text-muted);
+      background: #161b22;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .prog-meta span strong {
+      color: var(--text);
+    }
+
+    /* Code block */
+    pre {
+      margin: 0;
+      padding: 16px;
+      background: var(--code-bg);
+      color: #f0f6fc;
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.88rem;
+      line-height: 1.45;
+      overflow-x: auto;
+      tab-size: 4;
+      white-space: pre;
+    }
+    code {
+      font-family: inherit;
+    }
+
+    /* Syntax helpers (lightweight css) */
+    .c-comment { color: #8b949e; font-style: italic; }
+    .c-section { color: #ff7b72; font-weight: bold; }
+    .c-macro   { color: #d2a8ff; font-weight: bold; }
+    .c-instr   { color: #79c0ff; font-weight: 600; }
+    .c-reg     { color: #ffa657; }
+    .c-str     { color: #a5d6ff; }
+    .c-label   { color: #f2cc60; }
+
+    /* Footer floating fast actions */
+    .bottom-bar {
+      position: fixed;
+      bottom: 12px;
+      right: 16px;
+      z-index: 99;
+      display: flex;
+      gap: 8px;
+    }
+    .top-btn {
+      background: #30363d;
+      color: #fff;
+      border: 1px solid #8b949e;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      text-decoration: none;
+    }
+    .top-btn:hover {
+      background: #58a6ff;
+    }
+
+    /* Print styling */
+    @media print {
+      header, .card-actions, .bottom-bar { display: none; }
+      body { background: #fff; color: #000; }
+      .prog-card { border: 1px solid #ccc; box-shadow: none; break-inside: avoid; }
+      pre { background: #fafafa; color: #000; }
+    }
+  </style>
+</head>
+<body>
+
+<header id="top">
+  <div class="header-content">
+    <div>
+      <h1>⚡ COA Assembly Programs <span class="badge">Ultra-Fast Load</span></h1>
+    </div>
+    <div class="search-box">
+      <input type="text" id="filterInput" class="search-input" placeholder="🔍 Instant search program..." onkeyup="filterPrograms()">
+    </div>
+    <nav class="quick-nav">
+      <a href="#p1">1. String Ops</a>
+      <a href="#p2">2. Arithmetic (+ - * /)</a>
+      <a href="#p3">3. Multiplication (Shift/Add)</a>
+      <a href="#p4">4. Quadratic Roots (FPU)</a>
+      <a href="#p5">5. BCD &lt;-&gt; Hex</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- ================= PROGRAM 1 ================= -->
+  <article class="prog-card" id="p1">
+    <div class="card-header">
+      <div class="card-title">1. String Operations (Length, Copy, Reverse, Compare, Concat, Palindrome)</div>
+      <div class="card-actions">
+        <span class="compile-tag">nasm -f elf64 p1.asm &amp;&amp; ld p1.o -o p1</span>
+        <button class="copy-btn" onclick="copyCode('code-p1', this)">📋 Copy Code</button>
+      </div>
+    </div>
+    <div class="prog-meta">
+      <span><strong>Architecture:</strong> x86_64 Linux NASM</span>
+      <span><strong>Menu Options:</strong> 1. Length | 2. Copy | 3. Reverse | 4. Compare | 5. Concat | 6. Palindrome | 7. Exit</span>
+    </div>
+    <pre><code id="code-p1">%macro read 2
+    mov rax, 0
+    mov rdi, 0
+    mov rsi, %1
+    mov rdx, %2
+    syscall
+%endmacro
+
+%macro write 2
+    mov rax, 1
+    mov rdi, 1
+    mov rsi, %1
+    mov rdx, %2
+    syscall
+%endmacro
+
+section .data
+    menumsg db 10, "1. String length", 10
+            db "2. String copy", 10
+            db "3. String reverse", 10
+            db "4. String compare", 10
+            db "5. String concatenate", 10
+            db "6. Check palindrome", 10
+            db "7. Exit", 10
+            db "Enter your choice (1-7): "
+    menulen equ $-menumsg
+
+    msg1 db "Enter String1: "
+    len1 equ $-msg1
+    msg2 db "Enter String2: "
+    len2 equ $-msg2
+    msg3 db "Length of string: "
+    len3 equ $-msg3
+    msg4 db "Copied string: "
+    len4 equ $-msg4
+    msg5 db "Reversed string: "
+    len5 equ $-msg5
+    msg6 db "Strings are equal", 10
+    len6 equ $-msg6
+    msg7 db "Strings are not equal", 10
+    len7 equ $-msg7
+    msg8 db "Concatenated string: "
+    len8 equ $-msg8
+    msg9 db "String is palindrome", 10
+    len9 equ $-msg9
+    msg10 db "String is not palindrome", 10
+    len10 equ $-msg10
+    msg13 db "Wrong choice", 10
+    len13 equ $-msg13
+    newline db 10
+
+section .bss
+    string1 resb 21
+    string2 resb 21
+    string3 resb 42
+    l1 resq 1
+    l2 resq 1
+    l3 resq 1
+    choice resb 2
+    buff resb 24
+
+section .text
+    global _start
+
+_start:
+    ; Read first string
+    write msg1, len1
+    mov rsi, string1
+    mov rdx, 20
+    call read_line
+    mov [l1], rax
+
+    ; Read second string
+    write msg2, len2
+    mov rsi, string2
+    mov rdx, 20
+    call read_line
+    mov [l2], rax
+
+printmenu:
+    write menumsg, menulen
+    read choice, 2
+
+    cmp rax, 0
+    jle exit
+
+    cmp byte [choice], '1'
+    je strlen
+    cmp byte [choice], '2'
+    je strcpy
+    cmp byte [choice], '3'
+    je strrev
+    cmp byte [choice], '4'
+    je strcmp
+    cmp byte [choice], '5'
+    je concat
+    cmp byte [choice], '6'
+    je strpalindrome
+    cmp byte [choice], '7'
+    je exit
+
+    write msg13, len13
+    jmp printmenu
+
+; ------------------------------------
+; 1. String length
+; ------------------------------------
+strlen:
+    write msg3, len3
+    mov rax, [l1]
+    call display
+    jmp printmenu
+
+; ------------------------------------
+; 2. String copy
+; ------------------------------------
+strcpy:
+    mov rsi, string1
+    mov rdi, string3
+    mov rcx, [l1]
+    cld
+    rep movsb
+
+    write msg4, len4
+    write string3, [l1]
+    write newline, 1
+    jmp printmenu
+
+; ------------------------------------
+; 3. String reverse
+; ------------------------------------
+strrev:
+    mov rcx, [l1]
+    test rcx, rcx
+    jz reverse_done
+
+    mov rsi, string1
+    add rsi, rcx
+    dec rsi
+    mov rdi, string3
+
+reverse_loop:
+    mov al, [rsi]
+    mov [rdi], al
+    dec rsi
+    inc rdi
+    dec rcx
+    jnz reverse_loop
+
+reverse_done:
+    write msg5, len5
+    write string3, [l1]
+    write newline, 1
+    jmp printmenu
+
+; ------------------------------------
+; 4. String compare
+; ------------------------------------
+strcmp:
+    mov rax, [l1]
+    cmp rax, [l2]
+    jne not_equal
+
+    mov rsi, string1
+    mov rdi, string2
+    mov rcx, [l1]
+    cld
+    repe cmpsb
+    jne not_equal
+
+    write msg6, len6
+    jmp printmenu
+
+not_equal:
+    write msg7, len7
+    jmp printmenu
+
+; ------------------------------------
+; 5. String concatenation
+; ------------------------------------
+concat:
+    mov rsi, string1
+    mov rdi, string3
+    mov rcx, [l1]
+    cld
+    rep movsb
+
+    mov rsi, string2
+    mov rcx, [l2]
+    rep movsb
+
+    mov rax, [l1]
+    add rax, [l2]
+    mov [l3], rax
+
+    write msg8, len8
+    write string3, [l3]
+    write newline, 1
+    jmp printmenu
+
+; ------------------------------------
+; 6. Palindrome check
+; ------------------------------------
+strpalindrome:
+    mov rsi, string1
+    mov rdi, string3
+    mov rcx, [l1]
+
+    test rcx, rcx
+    jz palindrome_yes
+
+    add rsi, rcx
+    dec rsi
+
+palindrome_reverse:
+    mov al, [rsi]
+    mov [rdi], al
+    dec rsi
+    inc rdi
+    dec rcx
+    jnz palindrome_reverse
+
+    mov rsi, string1
+    mov rdi, string3
+    mov rcx, [l1]
+    cld
+    repe cmpsb
+    jne palindrome_no
+
+palindrome_yes:
+    write msg9, len9
+    jmp printmenu
+
+palindrome_no:
+    write msg10, len10
+    jmp printmenu
+
+; ------------------------------------
+; Read a line and remove its newline
+; Input: RSI = buffer, RDX = max bytes
+; Output: RAX = string length
+; ------------------------------------
+read_line:
+    push rbx
+    mov rbx, rsi
+    xor rax, rax
+    xor rdi, rdi
+    syscall
+
+    test rax, rax
+    jle read_empty
+
+    xor rcx, rcx
+
+read_scan:
+    cmp rcx, rax
+    jae read_finish
+    cmp byte [rbx + rcx], 10
+    je read_newline
+    inc rcx
+    jmp read_scan
+
+read_newline:
+    mov byte [rbx + rcx], 0
+    mov rax, rcx
+    jmp read_return
+
+read_finish:
+    mov byte [rbx + rax], 0
+    jmp read_return
+
+read_empty:
+    xor rax, rax
+
+read_return:
+    pop rbx
+    ret
+
+; ------------------------------------
+; Display unsigned decimal integer
+; Input: RAX = number
+; ------------------------------------
+display:
+    lea rsi, [buff + 23]
+    mov byte [rsi], 10
+    mov rcx, 1
+    mov rbx, 10
+    test rax, rax
+    jnz display_loop
+
+    dec rsi
+    mov byte [rsi], '0'
+    inc rcx
+    jmp display_write
+
+display_loop:
+    xor rdx, rdx
+    div rbx
+    add dl, '0'
+    dec rsi
+    mov [rsi], dl
+    inc rcx
+    test rax, rax
+    jnz display_loop
+
+display_write:
+    mov rdx, rcx
+    mov rax, 1
+    mov rdi, 1
+    syscall
+    ret
+
+; ------------------------------------
+; 7. Exit
+; ------------------------------------
+exit:
+    mov rax, 60
+    xor rdi, rdi
+    syscall</code></pre>
+  </article>
+
+  <!-- ================= PROGRAM 2 ================= -->
+  <article class="prog-card" id="p2">
+    <div class="card-header">
+      <div class="card-title">2. Arithmetic Operations (Addition, Subtraction, Multiplication, Division)</div>
+      <div class="card-actions">
+        <span class="compile-tag">nasm -f elf64 p2.asm &amp;&amp; ld p2.o -o p2</span>
+        <button class="copy-btn" onclick="copyCode('code-p2', this)">📋 Copy Code</button>
+      </div>
+    </div>
+    <div class="prog-meta">
+      <span><strong>Architecture:</strong> x86_64 Linux NASM</span>
+      <span><strong>Menu Options:</strong> 1. Addition | 2. Subtraction | 3. Multiplication | 4. Division | 5. Exit</span>
+    </div>
+    <pre><code id="code-p2">%macro WRITE 2
+    mov rax, 01
+    mov rdi, 01
+    mov rsi, %1
+    mov rdx, %2
+    syscall
+%endmacro
+
+%macro READ 2
+    mov rax, 00
+    mov rdi, 00
+    mov rsi, %1
+    mov rdx, %2
+    syscall
+%endmacro
+
+%macro EXIT 0
+    mov rax, 60
+    mov rdi, 00
+    syscall
+%endmacro
+
+
+section .data
+
+menu db 10,"1. Addition",10
+     db "2. Subtraction",10
+     db "3. Multiplication",10
+     db "4. Division",10
+     db "5. Exit",10
+     db "Enter your choice: ",10
+
+menulen equ $-menu
+
+msg1 db "Enter 2 numbers",10
+len1 equ $-msg1
+
+msg_add db "Addition is ",10
+len_add equ $-msg_add
+
+msg_sub db "Subtraction is ",10
+len_sub equ $-msg_sub
+
+msg_mul db "Multiplication is ",10
+len_mul equ $-msg_mul
+
+msg_div db "Division is ",10
+len_div equ $-msg_div
+
+msg_zero db "Cannot divide by zero!",10
+len_zero equ $-msg_zero
+
+msg_invalid db "Invalid choice!",10
+len_invalid equ $-msg_invalid
+
+
+section .bss
+
+char_buff resb 17
+actl      resq 1
+
+choice    resb 2
+
+a         resq 1
+b         resq 1
+c         resq 1
+
+
+section .text
+
+global _start
+
+_start:
+
+    ; -------------------------
+    ; Accept two numbers
+    ; -------------------------
+
+    WRITE msg1,len1
+
+    call accept
+    mov qword[a],rbx
+
+    call accept
+    mov qword[b],rbx
+
+
+; ==================================
+;             MENU
+; ==================================
+
+printmenu:
+
+    WRITE menu,menulen
+
+    READ choice,2
+
+
+    cmp byte[choice],31H
+    je addition
+
+    cmp byte[choice],32H
+    je subtraction
+
+    cmp byte[choice],33H
+    je multiplication
+
+    cmp byte[choice],34H
+    je division
+
+    cmp byte[choice],35H
+    je exit
+
+
+    ; Invalid choice
+    WRITE msg_invalid,len_invalid
+    jmp printmenu
+
+
+; ==================================
+;           ADDITION
+; ==================================
+
+addition:
+
+    mov rbx,qword[a]
+    add rbx,qword[b]
+    mov qword[c],rbx
+
+    WRITE msg_add,len_add
+
+    mov rbx,qword[c]
+    call display
+
+    jmp printmenu
+
+
+; ==================================
+;          SUBTRACTION
+; ==================================
+
+subtraction:
+
+    mov rbx,qword[a]
+    sub rbx,qword[b]
+    mov qword[c],rbx
+
+    WRITE msg_sub,len_sub
+
+    mov rbx,qword[c]
+    call display
+
+    jmp printmenu
+
+
+; ==================================
+;         MULTIPLICATION
+; ==================================
+
+multiplication:
+
+    mov rax,qword[a]
+    mul qword[b]
+
+    ; RDX:RAX contains result
+    ; We store lower 64 bits in c
+
+    mov qword[c],rax
+
+    WRITE msg_mul,len_mul
+
+    mov rbx,qword[c]
+    call display
+
+    jmp printmenu
+
+
+; ==================================
+;             DIVISION
+; ==================================
+
+division:
+
+    cmp qword[b],00H
+    je zero_error
+
+    mov rax,qword[a]
+    mov rdx,00H
+
+    div qword[b]
+
+    ; Quotient is in RAX
+    ; Remainder is in RDX
+
+    mov qword[c],rax
+
+    WRITE msg_div,len_div
+
+    mov rbx,qword[c]
+    call display
+
+    jmp printmenu
+
+zero_error:
+    WRITE msg_zero,len_zero
+    jmp printmenu
+
+
+; ==================================
+;              EXIT
+; ==================================
+
+exit:
+
+    EXIT
+
+
+; ==================================
+;             ACCEPT
+; ==================================
+
+accept:
+
+    READ char_buff,17
+
+    dec rax
+    mov qword[actl],rax
+
+    mov rsi,char_buff
+    mov rbx,00H
+
+up:
+
+    shl rbx,04H
+
+    mov rdx,00H
+    mov dl,byte[rsi]
+
+    cmp dl,39H
+    jbe sub30
+
+    sub dl,07H
+
+sub30:
+
+    sub dl,30H
+
+    add rbx,rdx
+
+    inc rsi
+
+    dec qword[actl]
+
+    jnz up
+
+    RET
+
+
+; ==================================
+;             DISPLAY
+; ==================================
+
+display:
+
+    mov rsi,char_buff
+    mov rcx,16
+
+above:
+
+    rol rbx,04H
+
+    mov dl,bl
+    AND dl,0FH
+
+    cmp dl,09H
+    jbe add30
+
+    add dl,07H
+
+add30:
+
+    add dl,30H
+
+    mov byte[rsi],dl
+
+    inc rsi
+
+    dec rcx
+
+    jnz above
+
+    WRITE char_buff,16
+
+    RET</code></pre>
+  </article>
+
+  <!-- ================= PROGRAM 3 ================= -->
+  <article class="prog-card" id="p3">
+    <div class="card-header">
+      <div class="card-title">3. Multiplication (Successive Addition &amp; Shift and Add Method)</div>
+      <div class="card-actions">
+        <span class="compile-tag">nasm -f elf64 p3.asm &amp;&amp; ld p3.o -o p3</span>
+        <button class="copy-btn" onclick="copyCode('code-p3', this)">📋 Copy Code</button>
+      </div>
+    </div>
+    <div class="prog-meta">
+      <span><strong>Architecture:</strong> x86_64 Linux NASM</span>
+      <span><strong>Menu Options:</strong> 1. Successive Addition Method | 2. Shift and Add Method | 3. Exit</span>
+    </div>
+    <pre><code id="code-p3">%macro WRITE 2
+    mov rax, 1
+    mov rdi, 1
+    mov rsi, %1
+    mov rdx, %2
+    syscall
+%endmacro
+
+%macro READ 2
+    mov rax, 0
+    mov rdi, 0
+    mov rsi, %1
+    mov rdx, %2
+    syscall
+%endmacro
+
+%macro EXIT 0
+    mov rax, 60
+    mov rdi, 0
+    syscall
+%endmacro
+
+section .data
+    menu db 10, "1. Successive Addition Method", 10
+         db "2. Shift and Add Method", 10
+         db "3. Exit", 10
+         db "Enter your choice: "
+    menulen equ $-menu
+
+    msg1 db "Enter the 1st number: ",10
+    len1 equ $-msg1
+    msg2 db "Enter the 2nd number: ",10
+    len2 equ $-msg2
+    msg3 db "Invalid choice: ",10
+    len3 equ $-msg3
+    msg4 db "The multiplication of two numbers is: ",10
+    len4 equ $-msg4
+
+section .bss
+    m resq 1
+    n resq 1
+    char_buff resb 32
+    actl resq 1
+    ans resq 1
+    A resq 1
+    B resq 1
+    Q resq 1
+    choice resb 2
+
+section .text
+    global _start
+
+_start:
+    WRITE msg1,len1
+    call accept
+    mov [m],rbx
+
+    WRITE msg2,len2
+    call accept
+    mov [n],rbx
+
+printmenu:
+    WRITE menu,menulen
+    READ choice,02
+
+    cmp byte [choice],31H
+    je succadd
+
+    cmp byte [choice],32H
+    je shiftadd
+
+    cmp byte [choice],33H
+    je exit
+
+    WRITE msg3,len3
+    jmp printmenu
+
+; SUCCESSIVE ADDITION METHOD
+succadd:
+    mov rbx,00
+    mov rdx,00
+    mov rcx,[n]
+
+    test rcx,rcx
+    jz succdone
+
+l1:
+    add rbx,[m]
+    adc rdx,00
+    dec rcx
+    jnz l1
+
+succdone:
+    mov [ans],rbx
+    mov [A],rdx
+    WRITE msg4,len4
+    mov rdx,[A]
+    mov rbx,[ans]
+    call display
+    jmp printmenu
+
+; SHIFT AND ADD METHOD
+shiftadd:
+    mov qword [A],00H
+    mov rbx,[m]
+    mov [B],rbx
+    mov rbx,[n]
+    mov [Q],rbx
+    mov rcx,64
+
+l2:
+    mov rbx,[Q]
+    and rbx,01H
+    jz shiftaq
+    mov rbx,[B]
+    add [A],rbx
+
+shiftaq:
+    mov rbx,[Q]
+    shr rbx,01H
+    mov rdx,[A]
+    and rdx,01H
+    shl rdx,63
+    or rbx,rdx
+    mov [Q],rbx
+    shr qword [A],01H
+    dec rcx
+    jnz l2
+
+    WRITE msg4,len4
+    mov rdx,[A]
+    mov rbx,[Q]
+    call display
+    jmp printmenu
+
+exit:
+    EXIT
+
+; ACCEPT PROCEDURE
+accept:
+    READ char_buff,17
+    mov [actl],rax
+    dec rax
+    mov qword [actl],rax
+    mov rbx,00H
+    mov rsi,char_buff
+
+up:
+    shl rbx,04H
+    mov rdx,00H
+    mov dl,byte [rsi]
+    cmp dl,39H
+    jbe sub30
+    sub dl,07H
+
+sub30:
+    sub dl,30H
+    add rbx,rdx
+    inc rsi
+    dec qword [actl]
+    jnz up
+    ret
+
+; DISPLAY PROCEDURE
+; RDX = HIGH 64 BITS
+; RBX = LOW 64 BITS
+display:
+    mov rsi,char_buff
+    mov rcx,16
+    mov r10,rdx
+
+above:
+    rol r10,04H
+    mov r11b,r10b
+    and r11b,0FH
+    cmp r11b,09H
+    jbe add30
+    add r11b,07H
+
+add30:
+    add r11b,30H
+    mov byte [rsi],r11b
+    inc rsi
+    dec rcx
+    jnz above
+
+    mov rcx,16
+    mov r9,rbx
+
+above2:
+    rol r9,04H
+    mov r11b,r9b
+    and r11b,0FH
+    cmp r11b,09H
+    jbe add30b
+    add r11b,07H
+
+add30b:
+    add r11b,30H
+    mov byte [rsi],r11b
+    inc rsi
+    dec rcx
+    jnz above2
+
+    WRITE char_buff,32
+    ret</code></pre>
+  </article>
+
+  <!-- ================= PROGRAM 4 ================= -->
+  <article class="prog-card" id="p4">
+    <div class="card-header">
+      <div class="card-title">4. Roots of Quadratic Equation (x87 FPU &amp; C stdlib printf/scanf)</div>
+      <div class="card-actions">
+        <span class="compile-tag">nasm -f elf64 p4.asm &amp;&amp; gcc -no-pie p4.o -o p4 -lm</span>
+        <button class="copy-btn" onclick="copyCode('code-p4', this)">📋 Copy Code</button>
+      </div>
+    </div>
+    <div class="prog-meta">
+      <span><strong>Architecture:</strong> x86_64 Linux NASM + GCC</span>
+      <span><strong>Technique:</strong> x87 Floating Point Unit (fld, fmul, fsub, fsqrt, ftst, fchs, fdiv)</span>
+    </div>
+    <pre><code id="code-p4">extern printf,scanf
+
+%macro PRINT 02
+push rbp
+mov rax,00H
+mov rdi,%1
+mov rsi,%2
+call printf
+pop rbp
+%endmacro
+
+%macro SCAN 02
+push rbp
+mov rax,00H
+mov rdi,%1
+mov rsi,%2
+call scanf
+pop rbp
+%endmacro
+
+%macro PRINTFLOAT 02
+push rbp
+mov rax,01H
+mov rdi,%1
+movsd xmm0,%2
+call printf
+pop rbp
+%endmacro
+
+section .data
+    msg1 db "Enter a,b & c",10,0
+    msg2 db "Roots are ",10,0
+    msg3 db "No real roots exist",10,0
+    fmt1 db "%s",0
+    fmt2 db "%lf",0
+    fmt3 db "%lf",10,0
+
+section .bss
+    a resb 08
+    b resb 08
+    c resb 08
+    t1 resb 08
+    t2 resb 08
+    t3 resb 08
+    t4 resb 08
+    temp resw 01
+    r1 resb 08
+    r2 resb 08
+
+section .text
+    global main
+
+main:
+    PRINT fmt1,msg1
+    SCAN fmt2,a
+    SCAN fmt2,b
+    SCAN fmt2,c
+
+    finit
+    fld qword[b]
+    fmul qword[b]
+    fstp qword [t1]
+
+    fld qword[a]
+    fmul qword[c]
+    mov word[temp],04
+    fimul word[temp]
+    fstp qword[t2]
+
+    fld qword[t1]
+    fsub qword[t2]
+    fstp qword[t1]
+
+    fld qword[t1]
+    ftst
+    fnstsw ax
+    sahf
+    fstp st0
+    jb noreal
+
+    fld qword[t1]
+    fabs
+    fsqrt
+    fstp qword[t2]
+
+    fld qword[b]
+    fchs
+    fstp qword[t3]
+
+    mov word[temp],02
+    fld qword[a]
+    fimul word[temp]
+    fstp qword[t4]
+
+    fld qword[t3]
+    fadd qword[t2]
+    fdiv qword[t4]
+    fstp qword[r1]
+
+printsecond:
+    fld qword[t3]
+    fsub qword[t2]
+    fdiv qword[t4]
+    fstp qword[r2]
+
+    PRINT fmt1,msg2
+    PRINTFLOAT fmt3,[r1]
+    PRINTFLOAT fmt3,[r2]
+    jmp exit
+
+noreal:
+    PRINT fmt1,msg3
+
+exit:
+    mov rax,00
+    ret</code></pre>
+  </article>
+
+  <!-- ================= PROGRAM 5 ================= -->
+  <article class="prog-card" id="p5">
+    <div class="card-header">
+      <div class="card-title">5. Code Conversion (BCD to Hexadecimal &amp; Hexadecimal to BCD)</div>
+      <div class="card-actions">
+        <span class="compile-tag">nasm -f elf64 p5.asm &amp;&amp; ld p5.o -o p5</span>
+        <button class="copy-btn" onclick="copyCode('code-p5', this)">📋 Copy Code</button>
+      </div>
+    </div>
+    <div class="prog-meta">
+      <span><strong>Architecture:</strong> x86_64 Linux NASM</span>
+      <span><strong>Menu Options:</strong> 1. BCD to Hex | 2. Hex to BCD | 3. Exit</span>
+    </div>
+    <pre><code id="code-p5">%macro WRITE 2
+    mov rax, 01
+    mov rdi, 01
+    mov rsi, %1
+    mov rdx, %2
+    syscall
+%endmacro
+
+%macro READ 2
+    mov rax, 00
+    mov rdi, 00
+    mov rsi, %1
+    mov rdx, %2
+    syscall
+%endmacro
+
+%macro EXIT 0
+    mov rax, 60
+    mov rdi, 00
+    syscall
+%endmacro
+
+section .data
+    menu db 10,"1. BCD to Hex",10
+         db "2. Hex to BCD",10
+         db "3. Exit",10
+         db "Enter your choice: "
+    menulen equ $-menu
+
+    msg1 db "Enter the BCD number: "
+    len1 equ $-msg1
+    msg2 db "This is the hexadecimal no.: "
+    len2 equ $-msg2
+    msg3 db "Enter the Hexadecimal number: "
+    len3 equ $-msg3
+    msg4 db "The BCD number is: "
+    len4 equ $-msg4
+    msg5 db "Invalid choice!",10
+    len5 equ $-msg5
+
+section .bss
+    char_buff resb 32
+    act1 resq 1
+    num resq 1
+    choice resb 1
+
+section .text
+    global _start
+
+_start:
+    WRITE menu,menulen
+    READ choice,02
+
+    cmp byte[choice],31H
+    je bcd2hex
+
+    cmp byte[choice],32H
+    je hex2bcd
+
+    cmp byte[choice],33H
+    je exit
+
+    WRITE msg5,len5
+    jmp _start
+
+bcd2hex:
+    WRITE msg1,len1
+    READ char_buff,17
+    dec rax
+    mov qword[act1],rax
+    mov rsi,char_buff
+    mov rax,00H
+    mov rbx,0AH
+
+up1:
+    mov rdx,00H
+    mov dl,byte[rsi]
+    sub dl,30H
+    mov rcx,rdx
+    mul rbx
+    add rax,rcx
+    inc rsi
+    dec qword[act1]
+    jnz up1
+
+    mov qword[num],rax
+    WRITE msg2,len2
+    mov rbx,qword[num]
+    call display_hex
+    jmp _start
+
+hex2bcd:
+    WRITE msg3,len3
+    READ char_buff,17
+    dec rax
+    mov qword[act1],rax
+    mov rsi,char_buff
+    mov rax,00H
+    mov rbx,10H
+
+up2:
+    mov rdx,00H
+    mov dl,byte[rsi]
+    cmp dl,39H
+    jbe digit
+    sub dl,07H
+
+digit:
+    sub dl,30H
+    mov rcx,rdx
+    mul rbx
+    add rax,rcx
+    inc rsi
+    dec qword[act1]
+    jnz up2
+
+    mov qword[num],rax
+    WRITE msg4,len4
+    call display_bcd
+    jmp _start
+
+display_hex:
+    mov rsi,char_buff
+    mov rcx,16
+
+above:
+    rol rbx,04
+    mov dl,bl
+    and dl,0FH
+    cmp dl,09H
+    jbe add30
+    add dl,07H
+
+add30:
+    add dl,30H
+    mov byte[rsi],dl
+    inc rsi
+    dec rcx
+    jnz above
+
+    WRITE char_buff,16
+    ret
+
+display_bcd:
+    mov rax,qword[num]
+    mov rsi,char_buff
+    add rsi,31
+    mov rcx,00H
+
+convert:
+    mov rdx,00H
+    mov rbx,10
+    div rbx
+    add dl,30H
+    dec rsi
+    mov byte[rsi],dl
+    inc rcx
+    cmp rax,00H
+    jnz convert
+
+    mov rdx,rcx
+    WRITE rsi,rdx
+    ret
+
+exit:
+    EXIT</code></pre>
+  </article>
+
+</main>
+
+<div class="bottom-bar">
+  <a href="#top" class="top-btn">⬆ Top</a>
+</div>
+
+<script>
+  // Fast 1-click clipboard copy with immediate visual feedback
+  function copyCode(elementId, btn) {
+    const text = document.getElementById(elementId).innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      const originalText = btn.innerHTML;
+      btn.innerHTML = "✅ Copied!";
+      btn.classList.add("copied");
+      setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.classList.remove("copied");
+      }, 1800);
+    }).catch(err => {
+      // Fallback for older browsers or permission denials
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+      btn.innerHTML = "✅ Copied!";
+      setTimeout(() => { btn.innerHTML = "📋 Copy Code"; }, 1800);
+    });
+  }
+
+  // Instant real-time card filtering
+  function filterPrograms() {
+    const query = document.getElementById('filterInput').value.toLowerCase();
+    const cards = document.querySelectorAll('.prog-card');
+    cards.forEach(card => {
+      const text = card.innerText.toLowerCase();
+      card.style.display = text.includes(query) ? '' : 'none';
+    });
+  }
+</script>
+
+</body>
+</html>
