@@ -1,0 +1,97 @@
+extern printf,scanf
+%macro PRINT 02
+push rbp
+mov rax,00H
+mov rdi,%1
+mov rsi,%2
+call printf
+pop rbp
+%endmacro
+%macro SCAN 02
+push rbp
+mov rax,00H
+mov rdi,%1
+mov rsi,%2
+call scanf
+pop rbp
+%endmacro
+%macro PRINTFLOAT 02
+push rbp
+mov rax,01H
+mov rdi,%1
+movsd xmm0,%2
+call printf
+pop rbp
+%endmacro
+section .data
+msg1 db "Enter a,b & c",10,0
+msg2 db "Roots are ",10,0
+msg3 db "No real roots exist",10,0
+fmt1 db "%s",0
+fmt2 db "%lf",0
+fmt3 db "%lf",10,0
+section .bss
+a resb 08
+b resb 08
+c resb 08
+t1 resb 08
+t2 resb 08
+t3 resb 08
+t4 resb 08
+temp resw 01
+r1 resb 08
+r2 resb 08
+section .text
+global main
+main:
+PRINT fmt1,msg1
+SCAN fmt2,a
+SCAN fmt2,b
+SCAN fmt2,c
+finit
+fld qword[b]
+fmul qword[b]
+fstp qword [t1]
+fld qword[a]
+fmul qword[c]
+mov word[temp],04
+fimul word[temp]
+fstp qword[t2]
+fld qword[t1]
+fsub qword[t2]
+fstp qword[t1]
+fld qword[t1]
+ftst
+fnstsw ax
+sahf
+fstp st0
+jb noreal
+fld qword[t1]
+fabs
+fsqrt
+fstp qword[t2]
+fld qword[b]
+fchs
+fstp qword[t3]
+mov word[temp],02
+fld qword[a]
+fimul word[temp]
+fstp qword[t4]
+fld qword[t3]
+fadd qword[t2]
+fdiv qword[t4]
+fstp qword[r1]
+printsecond:
+fld qword[t3]
+fsub qword[t2]
+fdiv qword[t4]
+fstp qword[r2]
+PRINT fmt1,msg2
+PRINTFLOAT fmt3,[r1]
+PRINTFLOAT fmt3,[r2]
+jmp exit
+noreal:
+PRINT fmt1,msg3
+exit:
+mov rax,00
+ret
