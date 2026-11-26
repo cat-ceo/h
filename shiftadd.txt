@@ -1,0 +1,148 @@
+%macro WRITE 2
+    mov rax, 1
+    mov rdi, 1
+    mov rsi, %1
+    mov rdx, %2
+    syscall
+%endmacro
+
+%macro READ 2
+    mov rax, 0
+    mov rdi, 0
+    mov rsi, %1
+    mov rdx, %2
+    syscall
+%endmacro
+
+%macro EXIT 0
+    mov rax, 60
+    mov rdi, 0
+    syscall
+%endmacro
+
+section .data
+    msg1 db "Enter the 1st number: ", 10
+    len1 equ $-msg1
+    msg2 db "Enter the 2nd number: ", 10
+    len2 equ $-msg2
+    msg4 db "The multiplication of two numbers is: ", 10
+    len4 equ $-msg4
+
+section .bss
+    m resq 1
+    n resq 1
+    char_buff resb 32
+    actl resq 1
+    A resq 1
+    B resq 1
+    Q resq 1
+
+section .text
+    global _start
+
+_start:
+    WRITE msg1, len1
+    call accept
+    mov [m], rbx
+
+    WRITE msg2, len2
+    call accept
+    mov [n], rbx
+
+    mov qword [A], 00H
+    mov rbx, [m]
+    mov [B], rbx
+    mov rbx, [n]
+    mov [Q], rbx
+    mov rcx, 64
+
+l2:
+    mov rbx, [Q]
+    and rbx, 01H
+    jz shiftaq
+    mov rbx, [B]
+    add [A], rbx
+
+shiftaq:
+    mov rbx, [Q]
+    shr rbx, 01H
+    mov rdx, [A]
+    and rdx, 01H
+    shl rdx, 63
+    or rbx, rdx
+    mov [Q], rbx
+    shr qword [A], 01H
+    dec rcx
+    jnz l2
+
+    WRITE msg4, len4
+    mov rdx, [A]
+    mov rbx, [Q]
+    call display
+
+    EXIT
+
+accept:
+    READ char_buff, 17
+    mov [actl], rax
+    dec rax
+    mov qword [actl], rax
+    mov rbx, 00H
+    mov rsi, char_buff
+
+up:
+    shl rbx, 04H
+    mov rdx, 00H
+    mov dl, byte [rsi]
+    cmp dl, 39H
+    jbe sub30
+    sub dl, 07H
+
+sub30:
+    sub dl, 30H
+    add rbx, rdx
+    inc rsi
+    dec qword [actl]
+    jnz up
+    ret
+
+display:
+    mov rsi, char_buff
+    mov rcx, 16
+    mov r10, rdx
+
+above:
+    rol r10, 04H
+    mov r11b, r10b
+    and r11b, 0FH
+    cmp r11b, 09H
+    jbe add30
+    add r11b, 07H
+
+add30:
+    add r11b, 30H
+    mov byte [rsi], r11b
+    inc rsi
+    dec rcx
+    jnz above
+
+    mov rcx, 16
+    mov r9, rbx
+
+above2:
+    rol r9, 04H
+    mov r11b, r9b
+    and r11b, 0FH
+    cmp r11b, 09H
+    jbe add30b
+    add r11b, 07H
+
+add30b:
+    add r11b, 30H
+    mov byte [rsi], r11b
+    inc rsi
+    dec rcx
+    jnz above2
+
+    WRITE char_buff, 32
+    ret
